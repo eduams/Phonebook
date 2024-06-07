@@ -1,6 +1,6 @@
 from logging import root
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QMessageBox
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 
@@ -75,6 +75,24 @@ class Tree:
             if node.right is not None:
                 self.print_tree(node.right)
 
+  def search(self, search_input, node=None):
+    if node is None:
+      node = self.root
+    if node is None:
+      return None
+    if node.data[0] == search_input:
+      return node
+    elif search_input < node.data[0]:
+      if node.left != None:
+        return self.search(search_input, node.left)
+      else:
+        return None 
+    else:
+      if node.right != None:
+        return self.search(search_input, node.right)
+      else:
+         return None
+    
   def return_tree_elements(self, node=None):
     elements = []
     if node is None:
@@ -120,7 +138,6 @@ class Tree:
     B.height = 1 + max(self.get_node_height(B.left), self.get_node_height(B.right))
 
     return B
-
 
 class Phonebook:
   def __init__(self):
@@ -188,33 +205,54 @@ class Ui_Dialog(object):
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
         self.verticalLayout.addWidget(self.tableWidget)
-
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
         self.pushButton_2.clicked.connect(self.add_to_tree)
+        self.pushButton.clicked.connect(self.search)
+        
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.pushButton.setText(_translate("Dialog", "Buscar"))
+        Dialog.setWindowTitle(_translate("Dialog", "PhonebookQT"))
+        self.pushButton.setText(_translate("Dialog", "Buscar nome"))
         self.label_3.setText(_translate("Dialog", "Nome"))
         self.label.setText(_translate("Dialog", "Telefone"))
         self.label_2.setText(_translate("Dialog", "Descrição"))
         self.pushButton_2.setText(_translate("Dialog", "Adicionar à lista"))
 
+    
+    def search(self):
+      search_input = self.lineEdit.text()
+      if not search_input:
+        self.popup("Campo de pesquisa vazio.")
+        return
+      if not tree.search(search_input):
+         self.popup("Nenhum resultado.")
+      else:
+         print(tree.search(search_input))
+
     def add_to_tree(self):
-      print("Botão 'Adicionar à lista' clicado")
       nome = self.lineEdit_4.text()
       telefone = self.lineEdit_2.text()
       descricao = self.lineEdit_3.text()
-      print(nome)
-      print(telefone)
-      print(descricao)
+      if not nome or not telefone or not descricao:
+         self.popup("Todos os campos são obrigatórios. Tente novamente.")
+         return
       tuple = (nome,telefone,descricao)
       tree.insert(tuple)
       tree.print_tree()
       self.fill_table()
+    
+    def popup(self, mensagem_erro):
+      msg = QMessageBox()
+      msg.setWindowTitle("Erro")
+      msg.setText(mensagem_erro)
+      msg.setIcon(QMessageBox.Warning)
+      msg.setStandardButtons(QMessageBox.Ok)
+      msg.exec_()
 
     def fill_table(self):
       self.tableWidget.clear()
@@ -237,10 +275,3 @@ ui = Ui_Dialog()
 ui.setupUi(Dialog)
 Dialog.show()
 sys.exit(app.exec())
-
-tree.insert("Carlos Vilagran")
-tree.insert("Maria Antonieta")
-tree.insert("Roberto Gomes")
-tree.insert("Florinda Mesa")
-print("Árvore:")
-tree.print_tree()
