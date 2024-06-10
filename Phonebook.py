@@ -100,13 +100,10 @@ class Tree:
         node = None
         return temp
 
-        # Node with two children: Get the inorder successor (smallest
-        # in the right subtree)
-      temp = self.get_min_value_node(node.right)
+      temp = node.right
       node.data = temp.data
       node.right = self.delete_recursive(temp.data, node.right)
 
-        # If the tree had only one node then return
     if node is None:
       return node
 
